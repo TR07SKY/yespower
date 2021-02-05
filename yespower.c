@@ -1119,8 +1119,6 @@ int yespower(yespower_local_t *local,
 {
     uint32_t N = params->N;
     uint32_t r = params->r;
-    const uint8_t *pers = params->pers;
-    size_t perslen = params->perslen;
     uint32_t Swidth;
     size_t B_size, V_size, XY_size, need;
     uint8_t *B, *S;
@@ -1130,8 +1128,7 @@ int yespower(yespower_local_t *local,
 
     /* Sanity-check parameters */
     if ((N < 1024 || N > 512 * 1024 || r < 8 || r > 32 ||
-        (N & (N - 1)) != 0 ||
-        (!pers && perslen))) {
+        (N & (N - 1)) != 0)) {
         errno = EINVAL;
         goto fail;
     }
@@ -1163,14 +1160,7 @@ int yespower(yespower_local_t *local,
     ctx.S2 = S + 2 * Swidth_to_Sbytes1(Swidth);
     ctx.w = 0;
 
-    if (pers) {
-        src = pers;
-        srclen = perslen;
-    } else {
-        srclen = 0;
-    }
-
-    pbkdf2_blake2b(init_hash, sizeof(init_hash), src, srclen, 1, B, 128);
+    pbkdf2_blake2b(init_hash, sizeof(init_hash), src, 0, 1, B, 128);
     memcpy(init_hash, B, sizeof(init_hash));
     smix_1_0(B, r, N, V, XY, &ctx);
     hmac_blake2b_hash((uint8_t *)dst, B + B_size - 64, 64, init_hash, sizeof(init_hash));

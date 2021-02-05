@@ -20,21 +20,29 @@
 CC = gcc
 LD = $(CC)
 RM = rm -f
+OMPFLAGS = -fopenmp
+LDFLAGS = -s -lrt
 CFLAGS = -Wall -O2 -fomit-frame-pointer -I. -Iutils -Icrypto
 
-PROJ = benchmark
-OBJS_CORE = yespower.o
-OBJS_COMMON = blake2b.o
-OBJS_BENCHMARK = $(OBJS_CORE) $(OBJS_COMMON) benchmark.o
+PROJ = benchmark test
+OBJS_CORE = yespower.o blake2b.o
+OBJS_BENCHMARK = $(OBJS_CORE) benchmark.o
+OBJS_TEST = $(OBJS_CORE) test.o
 CRYPTO = crypto/*.c
 OBJS_RM = *.o
 
 all: $(PROJ)
 
 benchmark: $(OBJS_BENCHMARK)
-	$(LD) $(OBJS_BENCHMARK) -o $@
+	$(LD) $(LDFLAGS) $(OMPFLAGS) $(OBJS_BENCHMARK) -o $@
 
 benchmark.o: benchmark.c
+	$(CC) -c $(CFLAGS) $(OMPFLAGS) $*.c
+
+test: $(OBJS_TEST)
+	$(LD) $(OBJS_TEST) -o $@
+
+test.o: test.c
 	$(CC) -c $(CFLAGS) $(CRYPTO) $*.c
 
 .c.o:
@@ -42,8 +50,10 @@ benchmark.o: benchmark.c
 
 yespower.o: yespower.h
 benchmark.o: yespower.h
+test.o: yespower.h
 
 clean:
 	$(RM) $(PROJ)
 	$(RM) $(OBJS_BENCHMARK)
+	$(RM) $(OBJS_TEST)
 	$(RM) $(OBJS_RM)
