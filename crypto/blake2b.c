@@ -31,7 +31,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "crypto/sph_types.h"
 #include "utils/sysendian.h"
 #include "blake2b.h"
 
@@ -100,7 +99,7 @@ static void blake2b_compress(blake2b_ctx *ctx, int last)
     v[13] ^= ctx->t[1]; // high 64 bits
 
     // last block flag set ?
-    if (last) { 
+    if (last) {
         v[14] = ~v[14];
     }
 
